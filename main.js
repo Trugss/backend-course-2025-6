@@ -70,36 +70,35 @@ app.get('/RegisterForm.html', (req, res) => {
 app.get('/SearchForm.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'SearchForm.html'));
 });
+
 /**
  * @swagger
  * /register:
- *   post: 
- *   summary: Реєстрація нового предмету інвентаря
- *  tags:
- *   - Inventory
- *  requestBody:
- *   required: true
- *  content:
- *    multipart/form-data:
- *    schema:
- *     type: object
- *    properties:
- *    inventory_name:
- *     type: string
- *    description: Ім'я предмету (обов'язково)
- *   description:
- *    type: string
- *   description: Опис предмету
- *  photo:
- *   type: string
- *  format: binary
- *  description: Фото предмету
- *  responses:
- *   '201':
- *    description: Предмет успішно зареєстровано
- *   '400':
- *   description: Помилка: відсутній обов'язковий параметр 
+ *   post:
+ *     summary: Реєстрація нового предмету інвентаря
+ *     tags:
+ *       - Inventory
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               inventory_name:
+ *                 type: string
+ *               item_description:
+ *                 type: string
+ *               photo:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: Предмет успішно зареєстровано
+ *       400:
+ *         description: Помилка - відсутній обов'язковий параметр
  */
+
 app.post('/register', upload.single('photo'), (req, res) => {
     const { inventory_name, description } = req.body;
 
@@ -123,28 +122,28 @@ app.post('/register', upload.single('photo'), (req, res) => {
  * /inventory:
  *   get:
  *     summary: Отримати список всіх предметів інвентаря
- *    tags:
- *    - Inventory
- *   responses:
- *    '200':
- *    description: Успішне отримання списку предметів
- *  content:
- *   application/json:
- *   schema:
- *    type: array
- *   items:
- *   type: object
- *  properties:
- *   id:   
- *   type: integer
- *  name:
- *  type: string
- * description:
- * type: string
- * photo_url:
- *  type: string
- * description: URL до фото предмету
+ *     tags:
+ *       - Inventory
+ *     responses:
+ *       200:
+ *         description: Успішне отримання списку предметів
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   item_description:
+ *                     type: string
+ *                   photo_url:
+ *                     type: string
  */
+
 app.get('/inventory', (req, res) => {
     const result = inventory.map(item => ({
         id: item.id,
@@ -156,24 +155,40 @@ app.get('/inventory', (req, res) => {
 });
 
 const findItemById = (id) => inventory.find(item => item.id === parseInt(id));
+
 /**
  * @swagger
  * /inventory/{id}:
  *   get:
- *   summary: Отримати інформацію про предмет інвентаря за ID
- *  tags:
- *  - Inventory
- * parameters:
- * - in: path
- * name: id
- * required: true
- *  schema:
- *  type: integer
- *  description: ID предмету
- * responses:
- *  '200':
- *  description: Успішне отримання інформації про предмет
+ *     summary: Отримати інформацію про предмет інвентаря за ID
+ *     tags:
+ *       - Inventory
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Успішне отримання інформації про предмет
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 item_description:
+ *                   type: string
+ *                 photo_url:
+ *                   type: string
+ *       404:
+ *         description: Помилка - Річ не знайдено
  */
+
 app.get('/inventory/:id', (req, res) => {
     const item = findItemById(req.params.id);
     if (!item) {
@@ -188,6 +203,7 @@ app.get('/inventory/:id', (req, res) => {
     };
     res.status(200).json(result);
 });
+
 /**
  * @swagger
  * /inventory/{id}:
@@ -201,11 +217,24 @@ app.get('/inventory/:id', (req, res) => {
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID предмету
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               item_description:
+ *                 type: string
  *     responses:
- *       '200':
+ *       200:
  *         description: Успішне оновлення інформації про предмет
+ *       404:
+ *         description: Помилка - Річ не знайдено
  */
+
 app.put('/inventory/:id', (req, res) => {
     const item = findItemById(req.params.id);
     if (!item) {
@@ -216,26 +245,29 @@ app.put('/inventory/:id', (req, res) => {
     if (req.body.description) item.description = req.body.description;
     res.status(200).json(item);
 });
+
 /**
  * @swagger
  * /inventory/{id}/photo:
  *   get:
- *   summary: Отримати фото предмету інвентаря за ID
- * tags:
- * - Inventory
- * parameters:
- * - in: path
- * name: id
- * required: true
- * schema:
- * type: integer
- * description: ID предмету
- * responses:
- * '200':
- * description: Успішне отримання фото предмету
- * '404':
- * description: Помилка: Фото не знайдено
+ *     summary: Отримати фото предмету інвентаря за ID
+ *     tags:
+ *       - Inventory
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Успішне отримання фото предмету
+ *         content:
+ *           image/jpeg: {}
+ *       404:
+ *         description: Помилка - Фото не знайдено
  */
+
 app.get('/inventory/:id/photo', (req, res) => {
     const item = findItemById(req.params.id);
 
@@ -246,21 +278,39 @@ app.get('/inventory/:id/photo', (req, res) => {
     res.setHeader('Content-Type', 'image/jpeg');
     res.status(200).sendFile(item.photo);
 });
+
 /**
  * @swagger
  * /inventory/{id}/photo:
- *  put:
- *  summary: Оновити фото предмету інвентаря за ID
- * tags:
- * - Inventory
- * parameters:
- * - in: path
- *  name: id
- * required: true
- * schema:
- * type: integer
- * description: ID предмету
+ *   put:
+ *     summary: Оновити фото предмету інвентаря за ID
+ *     tags:
+ *       - Inventory
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               photo:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Фото оновлено
+ *       400:
+ *         description: Файл фото не надано
+ *       404:
+ *         description: Річ не знайдено
  */
+
 app.put('/inventory/:id/photo', upload.single('photo'), (req, res) => {
     const item = findItemById(req.params.id);
 
@@ -277,26 +327,27 @@ app.put('/inventory/:id/photo', upload.single('photo'), (req, res) => {
     item.photo = req.file.path;
     res.status(200).json({  message: 'Фото оновлено', path: item.photo });
 });
+
 /**
  * @swagger
  * /inventory/{id}:
- *  delete:
- * summary: Видалити предмет інвентаря за ID
- *  tags:
- * - Inventory
- * parameters:
- * - in: path
- * name: id
- * required: true
- * schema:
- * type: integer
- * description: ID предмету
- * responses:
- * '200':
- * description: Річ видалена
- * '404':
- * description: Помилка: Річ не знайдено
+ *   delete:
+ *     summary: Видалити предмет інвентаря за ID
+ *     tags:
+ *       - Inventory
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Річ видалена
+ *       404:
+ *         description: Помилка - Річ не знайдено
  */
+
 app.delete('/inventory/:id', (req, res) => {
     const index = inventory.findIndex(item => item.id === parseInt(req.params.id));
     if (index === -1) {
@@ -311,32 +362,32 @@ app.delete('/inventory/:id', (req, res) => {
 
     res.status(200).json({ message: 'Річ видалена', item: deletedItem[0] });
 });
+
 /**
  * @swagger
  * /search:
- * post:
- * summary: Пошук предмету інвентаря за ID з опцією фото
- * tags:
- * - Inventory
- * requestBody:
- * required: true
- * content:
- * application/x-www-form-urlencoded:
- * schema:
- * type: object
- * properties:
- * id:
- * type: integer
- * description: ID предмету
- * has_photo:
- * type: boolean
- * description: Показувати посилання на фото, якщо воно відсутнє
- * responses:
- * '200':
- * description: Успішний пошук предмету
- * '404':
- * description: Помилка: Річ не знайдено
+ *   post:
+ *     summary: Пошук предмету інвентаря за ID з опцією фото
+ *     tags:
+ *       - Inventory
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               has_photo:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Успішний пошук предмету
+ *       404:
+ *         description: Помилка - Річ не знайдено
  */
+
 app.post('/search', (req, res) => {
     const { id, has_photo } = req.body;
 
@@ -346,8 +397,8 @@ app.post('/search', (req, res) => {
     }
 
     let description = item.description;
-    if (has_photo && !item.photo) {
-        description += ` [Фото: /innventory/${item.id}/photo]`;
+    if (has_photo === 'true' && item.photo) {
+        description += ` [Фото: /inventory/${item.id}/photo]`;
     }
 
     const result = {
@@ -360,7 +411,7 @@ app.post('/search', (req, res) => {
 });
 
 app.all('/register', (req, res) => {
-    res.status(404).send('Метод не дозволено');
+    res.status(405).send('Метод не дозволено');
 });
 
 app.use((req, res) => {
