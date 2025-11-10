@@ -67,6 +67,18 @@ app.post('/register', upload.single('photo'), (req, res) => {
     res.status(201).json(newItem);
 });
 
+app.get('/inventory', (req, res) => {
+    const result = inventory.map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        photo_url: item.photo ? `/inventory/${item.id}/photo` : null
+    }));
+    res.status(200).json(result);
+});
+
+const findItemById = (id) => inventory.find(item => item.id === parseInt(id));
+
 app.listen(options.port, options.host, () => {
-    console.log(`Сервер запущено на http://${options.host}:${options.port}`); // 
+    console.log(`Сервер запущено на http://${options.host}:${options.port}`); 
 });
