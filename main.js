@@ -2,6 +2,7 @@ const express = require('express');
 const { program } = require('commander');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
 
 program
     .option('-h, --host <type>', 'Адреса') 
@@ -22,7 +23,27 @@ if (!fs.existsSync(cacheDir)) {
     console.log(`Створено директорію кешу: ${cacheDir}`);
 }
 
+let inventory = [];
+let currentId = 0;
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, cacheDir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
+
 const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+
+app.get('/RegisterForm.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'RegisterForm.html'));
+});
 
 app.listen(options.port, options.host, () => {
     console.log(`Сервер запущено на http://${options.host}:${options.port}`); // 
