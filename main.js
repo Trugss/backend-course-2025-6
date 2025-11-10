@@ -45,6 +45,28 @@ app.get('/RegisterForm.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'RegisterForm.html'));
 });
 
+app.get('/SearchForm.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'SearchForm.html'));
+});
+
+app.post('/register', upload.single('photo'), (req, res) => {
+    const { inventory_name, description } = req.body;
+
+    if (!inventory_name) {
+        return res.status(400).send('Помилка: inventory_name є обов\'язковим');
+    }
+
+    const newItem = {
+        id: currentId++, 
+        name: inventory_name,
+        description: description || '',
+        photo: req.file ? req.file.path : null
+    };
+
+    inventory.push(newItem);
+    res.status(201).json(newItem);
+});
+
 app.listen(options.port, options.host, () => {
     console.log(`Сервер запущено на http://${options.host}:${options.port}`); // 
 });
