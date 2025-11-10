@@ -133,6 +133,51 @@ app.put('/inventory/:id/photo', upload.single('photo'), (req, res) => {
     res.status(200).json({  message: 'Фото оновлено', path: item.photo });
 });
 
+app.delete('/inventory/:id', (req, res) => {
+    const index = inventory.findIndex(item => item.id === parseInt(req.params.id));
+    if (index === -1) {
+        return res.status(404).send('Помилка: Річ не знайдено');
+    }
+
+    const deletedItem = inventory.splice(index, 1);
+
+    if (deletedItem[0].photo && fs.existsSync(deletedItem[0].photo)) {
+        fs.unlinkSync(deletedItem[0].photo);
+    }
+
+    res.status(200).json({ message: 'Річ видалена', item: deletedItem[0] });
+});
+
+app.post('/search', (req, res) => {
+    const { id, has_photo } = req.body;
+
+    const item = findItemById(id);
+    if (!item) {
+        return res.status(404).send('Помилка: Річ не знайдено');
+    }
+
+    let description = item.description;
+    if (has_photo && !item.photo) {
+        description += ` [Фото: /innventory/${item.id}/photo]`;
+    }
+
+    const result = {
+        id: item.id,
+        name: item.name,
+        description: description,
+    };
+
+    res.status(200).json(result);
+});
+
+app.all('/register', (req, res) => {
+    res.status(404).send('Метод не дозволено');
+});
+
+app.use((req, res) => {
+    res.status(404).send('Помилка: Ендпоінт не знайдено');
+});
+
 app.listen(options.port, options.host, () => {
     console.log(`Сервер запущено на http://${options.host}:${options.port}`); 
 });
