@@ -105,6 +105,34 @@ app.put('/inventory/:id', (req, res) => {
     res.status(200).json(item);
 });
 
+app.get('/inventory/:id/photo', (req, res) => {
+    const item = findItemById(req.params.id);
+
+    if (!item || !item.photo || !fs.existsSync(item.photo)) {
+        return res.status(404).send('Помилка: Фото не знайдено');
+
+    }
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.status(200).sendFile(item.photo);
+});
+
+app.put('/inventory/:id/photo', upload.single('photo'), (req, res) => {
+    const item = findItemById(req.params.id);
+
+    if (!item) {
+        return res.status(404).send('Помилка: Річ не знайдено');
+    }
+
+    if (!req.file) {
+        return res.status(400).send('Помилка: Файл фото не надано');
+    }
+
+    if (item.photo && fs.existsSync(item.photo)) fs.unlinkSync(item.photo);
+
+    item.photo = req.file.path;
+    res.status(200).json({  message: 'Фото оновлено', path: item.photo });
+});
+
 app.listen(options.port, options.host, () => {
     console.log(`Сервер запущено на http://${options.host}:${options.port}`); 
 });
