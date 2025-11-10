@@ -79,6 +79,32 @@ app.get('/inventory', (req, res) => {
 
 const findItemById = (id) => inventory.find(item => item.id === parseInt(id));
 
+app.get('/inventory/:id', (req, res) => {
+    const item = findItemById(req.params.id);
+    if (!item) {
+        return res.status(404).send('Помилка: Річ не знайдено');
+    }
+
+    const result = {
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        photo_url: item.photo ? `/inventory/${item.id}/photo` : null
+    };
+    res.status(200).json(result);
+});
+
+app.put('/inventory/:id', (req, res) => {
+    const item = findItemById(req.params.id);
+    if (!item) {
+        return res.status(404).send('Помилка: Річ не знайдено');
+    }
+
+    if (req.body.name) item.name = req.body.name;
+    if (req.body.description) item.description = req.body.description;
+    res.status(200).json(item);
+});
+
 app.listen(options.port, options.host, () => {
     console.log(`Сервер запущено на http://${options.host}:${options.port}`); 
 });
