@@ -60,29 +60,8 @@
 		{
 			"name": "PUT /inventory/0:",
 			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{ \"name\": \"Red apple\" }",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:3000/inventory/0",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"inventory",
-						"0"
-					]
-				}
+				"method": "GET",
+				"header": []
 			},
 			"response": []
 		},
@@ -97,34 +76,8 @@
 		{
 			"name": "POST /search",
 			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "id",
-							"value": "0",
-							"type": "text"
-						},
-						{
-							"key": "has_photo",
-							"value": "true",
-							"type": "text"
-						}
-					]
-				},
-				"url": {
-					"raw": "http://localhost:3000/search",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"search"
-					]
-				}
+				"method": "GET",
+				"header": []
 			},
 			"response": []
 		},
@@ -139,51 +92,16 @@
 		{
 			"name": "PUT /inventory/0/photo",
 			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "photo",
-							"type": "file",
-							"src": "/C:/Users/Oleksandr Martsichuk/Downloads/istockphoto-584226186-612x612.jpg"
-						}
-					]
-				},
-				"url": {
-					"raw": "http://localhost:3000/inventory/0/photo",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"inventory",
-						"0",
-						"photo"
-					]
-				}
+				"method": "GET",
+				"header": []
 			},
 			"response": []
 		},
 		{
 			"name": "DELETE /inventory/0",
 			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:3000/inventory/0",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"inventory",
-						"0"
-					]
-				}
+				"method": "GET",
+				"header": []
 			},
 			"response": []
 		}
