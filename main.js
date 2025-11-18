@@ -43,8 +43,39 @@ if (!fs.existsSync(cacheDir)) {
     console.log(`Створено директорію кешу: ${cacheDir}`);
 }
 
+const dbPath = path.join(cacheDir, 'inventory.json');
+
 let inventory = [];
 let currentId = 0;
+
+const saveData = () => {
+    const dataToSave = {
+        inventory: inventory,
+        currentId: currentId
+    };
+    fs.writeFileSync(dbPath, JSON.stringify(dataToSave, null, 2));
+};
+
+if (fs.existsSync(dbPath)) {
+    try {
+        const rawData = fs.readFileSync(dbPath);
+        const data = JSON.parse(rawData);
+
+        if (Array.isArray(data)) {
+            inventory = data;
+            currentId = inventory.length > 0 ? Math.max(...inventory.map(i > i.id)) + 1 : 0;
+         } else {
+            inventory = data.inventory || [];
+            currentId = data.currentId || 0;
+         }
+         console.log(`Завантажено ${inventory.length} елементів. Наступний ID: ${currentId}`);
+    } catch (err) {
+        console.error('Помилка читання даних', err);
+        inventory = [];
+        currentId = 0;
+    };
+};
+
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -63,8 +94,8 @@ app.use(express.urlencoded({extended: true}));
 
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpecs));
 
-app.get('/RegisterForm.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'RegisterForm.html'));
+app.get('/RegisterForm.html', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'RegisterForm.html')); 
 });
 
 app.get('/SearchForm.html', (req, res) => {
@@ -114,6 +145,7 @@ app.post('/register', upload.single('photo'), (req, res) => {
     };
 
     inventory.push(newItem);
+    saveData();
     res.status(201).json(newItem);
 });
 
@@ -235,6 +267,18 @@ app.get('/inventory/:id', (req, res) => {
  *         description: Помилка - Річ не знайдено
  */
 
+
+
+/**
+ * @swagger
+ * /hello:
+ *  post:
+ */
+
+app.post('/hello', (req, res) => {
+    
+});
+
 app.put('/inventory/:id', (req, res) => {
     const item = findItemById(req.params.id);
     if (!item) {
@@ -243,6 +287,8 @@ app.put('/inventory/:id', (req, res) => {
 
     if (req.body.name) item.name = req.body.name;
     if (req.body.description) item.description = req.body.description;
+
+    saveData();
     res.status(200).json(item);
 });
 
@@ -325,6 +371,8 @@ app.put('/inventory/:id/photo', upload.single('photo'), (req, res) => {
     if (item.photo && fs.existsSync(item.photo)) fs.unlinkSync(item.photo);
 
     item.photo = req.file.path;
+
+    saveData();
     res.status(200).json({  message: 'Фото оновлено', path: item.photo });
 });
 
@@ -360,6 +408,7 @@ app.delete('/inventory/:id', (req, res) => {
         fs.unlinkSync(deletedItem[0].photo);
     }
 
+    saveData();
     res.status(200).json({ message: 'Річ видалена', item: deletedItem[0] });
 });
 
@@ -391,13 +440,20 @@ app.delete('/inventory/:id', (req, res) => {
 app.post('/search', (req, res) => {
     const { id, has_photo } = req.body;
 
+    if (!id) {
+        return res.status(400).send('Помилка: ID не вказано');
+    }
+
     const item = findItemById(id);
     if (!item) {
         return res.status(404).send('Помилка: Річ не знайдено');
     }
 
     let description = item.description;
-    if (has_photo === 'true' && item.photo) {
+
+    const wantsPhoto = String(has_photo) === 'true' || has_photo === true || has_photo === 'on';
+    
+    if (wantsPhoto && item.photo) {
         description += ` [Фото: /inventory/${item.id}/photo]`;
     }
 
